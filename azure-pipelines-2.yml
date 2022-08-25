@@ -13,7 +13,7 @@ variables:
   dockerRegistryServiceConnection: 'c0fa903c-17ee-4da4-abf5-5fa0b0eef1d8'
   imageRepository: 'whitespacemxgsspringbootdocker'
   containerRegistry: 'demojava.azurecr.io'
-  dockerfilePath: 'RUN mkdir /opt/app COPY *.jar /opt/app CMD [&quot;java&quot;, &quot;-jar&quot;, &quot;/opt/app/japp.jar&quot;]'
+  dockerfilePath: 'Dockerfile'
   tag: '$(Build.BuildId)'
 
   # Agent VM image name
