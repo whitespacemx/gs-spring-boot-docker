@@ -51,6 +51,6 @@ stages:
       inputs:
         action: 'deploy'
         kubernetesServiceConnection: 'demo-velero-default'
-        namespace: 'defaultsssssssssssssssssssssssssss'
+        namespace: 'default'
         manifests: 'manifest/*'
         containers: $(containerRegistry)/$(imageRepository):$(tag)  
