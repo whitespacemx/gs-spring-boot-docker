@@ -48,10 +48,10 @@ stages:
         tags: |
           $(tag)
     - task: KubernetesManifest@0
-            inputs:
-              action: 'deploy'
-              kubernetesServiceConnection: 'demo-velero-default'
-              namespace: 'demo'
+      inputs:
+        action: 'deploy'
+        kubernetesServiceConnection: 'demo-velero-default'
+        namespace: 'demo'
 
 
           
