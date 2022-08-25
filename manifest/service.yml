@@ -5,6 +5,7 @@ metadata:
   labels:
     run: java-deployment
 spec:
+  type: LoadBalancer
   ports:
   - port: 8080
     protocol: TCP
