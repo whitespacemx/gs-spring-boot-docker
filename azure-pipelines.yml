@@ -5,14 +5,11 @@ resources:
 - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: '4986d87b-4a86-4d68-977d-527b0c40e261'
   imageRepository: 'whitespacemxgsspringbootdocker'
   containerRegistry: 'demojava.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
-  #tag: '$(Build.BuildId)'
-  tag: 'latest'
-  # Agent VM image name
+  tag: '$(Build.BuildId)'
   vmImageName: 'ubuntu-latest'
 
 stages:
@@ -53,4 +50,5 @@ stages:
         kubernetesServiceConnection: 'demo-velero-default'
         namespace: 'default'
         manifests: 'manifest/*'
-        containers: $(containerRegistry)/$(imageRepository):$(tag)  
+        containers: | 
+          containers: $(containerRegistry)/$(imageRepository):$(tag)  
