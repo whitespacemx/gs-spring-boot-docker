@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: java
-        image: containers
+        image: whitespacemxgsspringbootdocker:1.7.9
         ports:
         - containerPort: 80
