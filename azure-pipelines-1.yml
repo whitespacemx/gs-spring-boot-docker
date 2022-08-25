@@ -21,37 +21,39 @@ variables:
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
-stages:
-- stage: Build
+- stage: Build 
   displayName: Build stage
-  jobs:
-  - job: Build
-    displayName: Build
+  jobs:  
+  - job: Build 
+    displayName: Build and Push Container Images
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: Maven@3
+    - task: AzureKeyVault@1
+      displayName: Fetch secrets from Azure Key vault
       inputs:
-        mavenPomFile: 'complete/pom.xml'
-        mavenOptions: '-Xmx3072m'
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.8'
-        jdkArchitectureOption: 'x64'
-        publishJUnitResults: true
-        testResultsFiles: '**/TEST-*.xml'
-        goals: 'package'
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+        azureSubscription: 'Java Demos 2'
+        KeyVaultName: 'piggymetrics'
+        SecretsFilter: '*'
 
-    - upload: manifests
-      artifact: manifests
+    - task: Bash@3
+      displayName: Build container images for each service
+      inputs:
+        targetType: 'inline'
+        script: |
+          export CONTAINER_REGISTRY=$(CONTAINER_REGISTRY)
+          export IMAGE_TAG=$(IMAGE_TAG)
+          echo 'Install ACR  credential helper and login'
+          curl -L https://aka.ms/acr/installaad/bash | /bin/bash
+          az acr login -n $(CONTAINER_REGISTRY)
+          docker login -u $(AZURE-REGISTRY-USERNAME) -p $(AZURE-REGISTRY-PASSWORD) $(CONTAINER_REGISTRY).azurecr.io
+          echo 'Start Build'
+          cd config
+          mvn compile jib:build \
+              -Djib.container.environment=CONFIG_SERVICE_PASSWORD=$(CONFIG-SERVICE-PASSWORD) 
+          echo 'Build complete'
+    - publish: kubernetes
+      artifact: kubernetes
 
 - stage: Deploy
   displayName: Deploy stage
@@ -59,30 +61,46 @@ stages:
 
   jobs:
   - deployment: Deploy
-    displayName: Deploy
+    displayName: Deploy to AKS
     pool:
       vmImage: $(vmImageName)
-    environment: 'whitespacemxgsspringbootdocker.default'
+    environment: 'Piggymetrics.piggymetrics-azp'
     strategy:
       runOnce:
         deploy:
           steps:
-          - task: KubernetesManifest@0
-            displayName: Create imagePullSecret
+          - task: AzureKeyVault@1
+            displayName: Fetch secrets from Azure Key vault
             inputs:
-              action: createSecret
-              secretName: $(imagePullSecret)
-              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+              azureSubscription: 'Java Demos 2'
+              KeyVaultName: 'piggymetrics'
+              SecretsFilter: '*'
+          
+          - task: replacetokens@3
+            displayName: Replace CONTAINER_REGISTRY & IMAGE_TAG in all the manifest files
+            inputs:
+              targetFiles: '$(Pipeline.Workspace)/kubernetes/*.yaml'
+              tokenPrefix: '${'
+              tokenSuffix: '}'
+
+          - task: KubernetesManifest@0
+            displayName: Create generic secrets to be available on pods
+            inputs:
+              action: 'createSecret'
+              secretType: 'generic'
+              secretName: 'piggymetrics'
+              secretArguments: '--from-literal=config_service_password=$(CONFIG-SERVICE-PASSWORD) --from-literal=notification_service_password=$(NOTIFICATION-SERVICE-PASSWORD) --from-literal=statistics_service_password=$(STATISTICS-SERVICE-PASSWORD) --from-literal=account_service_password=$(ACCOUNT-SERVICE-PASSWORD) --from-literal=rabbitmq_password=$(RABBITMQ-PASSWORD) --from-literal=mongodb_uri=$(MONGODB-URI)  --from-literal=mongodb_database=$(MONGODB-DATABASE) --from-literal=rabbitmq_username=$(RABBITMQ-USERNAME) --from-literal=rabbitmq_host=$(RABBITMQ-HOST) --from-literal=rabbitmq_port=$(RABBITMQ-PORT)  --from-literal=notification_email_user=$(SMTP-USER) --from-literal=notification_email_pass=$(SMTP-PASSWORD) --from-literal=notification_email_host=$(NOTIFICATION-EMAIL-HOST) --from-literal=notification_email_port=$(NOTIFICATION-EMAIL-PORT)'
+
 
           - task: KubernetesManifest@0
             displayName: Deploy to Kubernetes cluster
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/manifests/deployment.yml
-                $(Pipeline.Workspace)/manifests/service.yml
-              imagePullSecrets: |
-                $(imagePullSecret)
-              containers: |
-                $(containerRegistry)/$(imageRepository):$(tag)
-
+                $(Pipeline.Workspace)/kubernetes/1-config.yaml
+                $(Pipeline.Workspace)/kubernetes/2-registry.yaml
+                $(Pipeline.Workspace)/kubernetes/3-gateway.yaml
+                $(Pipeline.Workspace)/kubernetes/4-auth-service.yaml
+                $(Pipeline.Workspace)/kubernetes/5-account-service.yaml
+                $(Pipeline.Workspace)/kubernetes/6-statistics-service.yaml
+                $(Pipeline.Workspace)/kubernetes/7-notification-service.yaml
