@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: java
-        image: whitespacemxgsspringbootdocker:1.7.9
+        image: demojava.azurecr.io/whitespacemxgsspringbootdocker:1.0
         ports:
         - containerPort: 80
