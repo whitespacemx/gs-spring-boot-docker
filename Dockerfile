@@ -1,4 +1,4 @@
 FROM mcr.microsoft.com/openjdk/jdk:17-ubuntu
 RUN mkdir /opt/app
-COPY complete/target/*.jar /opt/app
+COPY complete/target/*.jar /opt/app/japp.jar
 CMD ["java", "-jar", "/opt/app/japp.jar"]
