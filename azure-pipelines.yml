@@ -47,7 +47,7 @@ stages:
     - task: KubernetesManifest@0
       inputs:
         action: 'deploy'
-        kubernetesServiceConnection: 'demo-velero-default'
+        kubernetesServiceConnection: 'k8s-demo'
         namespace: 'demo'
         manifests: 'manifest/*'
         containers: demojava.azurecr.io/whitespacemxgsspringbootdocker:$(tag)
