@@ -5,9 +5,8 @@ metadata:
   labels:
     run: java-deployment
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
-  - port: 80
-    protocol: TCP
+  - port: 8080
   selector:
     run: java-deployment
