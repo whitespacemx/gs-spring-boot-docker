@@ -48,7 +48,7 @@ stages:
     - task: KubernetesManifest@0
       inputs:
         action: 'deploy'
-        kubernetesServiceConnection: 'k8s-demo'
+        kubernetesServiceConnection: 'aks-demo'
         namespace: 'demo'
         manifests: 'manifest/*'
         containers: demojava.azurecr.io/whitespacemxgsspringbootdocker:$(tag)
