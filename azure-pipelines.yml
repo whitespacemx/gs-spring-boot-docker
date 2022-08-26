@@ -48,7 +48,7 @@ stages:
       inputs:
         action: 'deploy'
         kubernetesServiceConnection: 'demo-velero-default'
-        namespace: 'default'
+        namespace: 'demo'
         manifests: 'manifest/*'
         containers: demojava.azurecr.io/whitespacemxgsspringbootdocker:$(tag)
           #containers: $(containerRegistry)/$(imageRepository):$(tag)  
