@@ -49,7 +49,7 @@ stages:
       inputs:
         action: 'deploy'
         kubernetesServiceConnection: 'aks-demo'
-        namespace: 'demo'
+        namespace: 'default'
         manifests: 'manifest/*'
         containers: demojava.azurecr.io/whitespacemxgsspringbootdocker:$(tag)
           #containers: $(containerRegistry)/$(imageRepository):$(tag)  
