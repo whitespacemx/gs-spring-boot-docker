@@ -5,7 +5,7 @@ resources:
 - repo: self
 
 variables:
-  dockerRegistryServiceConnection: '4986d87b-4a86-4d68-977d-527b0c40e261'
+  dockerRegistryServiceConnection: 'dea8905c-8a2c-4b1e-ba68-f276e492c158'
   imageRepository: 'whitespacemxgsspringbootdocker'
   containerRegistry: 'demojava.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
